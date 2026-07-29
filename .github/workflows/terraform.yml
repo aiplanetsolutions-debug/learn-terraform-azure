@@ -1,20 +1,20 @@
-name: "Terraform CI/CD Pipeline"
+name: "Terraform Manual Release Pipeline"
 
 on:
   push:
     branches:
-      - main # Automatically runs every time code is pushed to main
+      - main
 
 jobs:
-  terraform:
-    name: "Run Terraform Plan"
+   # STAGE 1: Automatically run the check/dry-run plan
+  build_and_plan:
+    name: "1. Automated Plan Check"
     runs-on: ubuntu-latest
     env:
       ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
       ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
       ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
       ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
-
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v4
@@ -22,10 +22,45 @@ jobs:
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.1.0" # Matches your main.tf minimum requirement
+          terraform_version: "1.1.0"
 
       - name: "Terraform Init"
         run: terraform init
 
+      # 👇 1. Captures the plan output text into a file
       - name: "Terraform Plan"
-        run: terraform plan
+        run: terraform plan -no-color > plan_output.txt
+
+      # 👇 2. Injects that plan text directly onto the GitHub Actions dashboard
+      - name: "Publish Plan to Dashboard"
+        run: |
+          echo "### 📋 Terraform Plan Preview" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
+          cat plan_output.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # STAGE 2: The Manual Gate Deployment
+  deploy_to_azure:
+    name: "2. Manual Apply Execution"
+    needs: build_and_plan         # 👈 Ensures Stage 1 must pass successfully first
+    environment: production       # 👈 This keyword fires off your manual review gate!
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+      ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+      ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+      ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.0"
+
+      - name: "Terraform Init"
+        run: terraform init
+
+      - name: "Terraform Apply"
+        run: terraform apply -auto-approve # Safe because you manually authorized it to run
