@@ -36,4 +36,9 @@ resource "azurerm_subnet" "shared_services" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.20.10.0/24"] 
 }
+resource "azurerm_network_security_group" "sim_nsg" {
+  name                = "nsg-simulation-01"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+}
 
