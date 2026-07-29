@@ -41,6 +41,7 @@ resource "azurerm_network_security_group" "sim_nsg" {
   name                = "nsg-simulation-01"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
+}
 
 resource "azurerm_subnet" "sim_subnet" {
   name                 = "SimulationSubnet"
