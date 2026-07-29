@@ -1,0 +1,31 @@
+name: "Terraform CI/CD Pipeline"
+
+on:
+  push:
+    branches:
+      - main # Automatically runs every time code is pushed to main
+
+jobs:
+  terraform:
+    name: "Run Terraform Plan"
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ clients.AZURE_CREDENTIALS.clientId }} # GitHub pulls these dynamically from your secret
+      ARM_CLIENT_SECRET: ${{ clients.AZURE_CREDENTIALS.clientSecret }}
+      ARM_SUBSCRIPTION_ID: ${{ clients.AZURE_CREDENTIALS.subscriptionId }}
+      ARM_TENANT_ID: ${{ clients.AZURE_CREDENTIALS.tenantId }}
+
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.0" # Matches your main.tf minimum requirement
+
+      - name: "Terraform Init"
+        run: terraform init
+
+      - name: "Terraform Plan"
+        run: terraform plan
