@@ -36,4 +36,10 @@ resource "azurerm_subnet" "shared_services" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.20.10.0/24"] 
 }
+resource "azurerm_subnet" "sim_subnet" {
+  name                 = "SimulationSubnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.20.50.0/24"] # A completely fresh range
+}
 
