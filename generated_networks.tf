@@ -37,10 +37,24 @@ resource "azurerm_subnet" "SharedServicesSubnet" {
   address_prefixes     = ["10.20.10.0/24"] 
 }
 
+resource "azurerm_virtual_network" "vnetResearch" {
+  name                    = "ResearchVnet"
+  resource_group_name     = azurerm_resource_group.rg.name
+  location                = var.seasia_location
+  address_space           = ["10.40.0.0/16"]
+}
+
+resource "azurerm_subnet" "ResearchSystemSubnet" {
+  name                 = "ResearchSystemSubnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnetResearch.name
+  address_prefixes     = ["10.40.0.0/24"] 
+}
+
 resource "azurerm_virtual_network" "vnetManufacturing" {
   name                    = "ManufacturingVnet"
   resource_group_name     = azurerm_resource_group.rg.name
-  location                = var.westeurope_location
+  location                = var.westus_location
   address_space           = ["10.30.0.0/16"]
 }
 
@@ -68,4 +82,3 @@ resource "azurerm_subnet" "SensorSubnet3" {
   virtual_network_name = azurerm_virtual_network.vnetManufacturing.name
   address_prefixes     = ["10.30.22.0/24"] 
 }
-

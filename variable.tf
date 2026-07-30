@@ -1,6 +1,12 @@
-variable "westeurope_location" {
+variable "westus_location" {
   type        = string
   description = "The region for our secondary tutorial virtual network"
-  default     = "West Europe" 
+  default     = "West US" 
 }
-  
+
+variable "seasia_location" {
+  type        = string
+  description = "The region for our secondary tutorial virtual network"
+  default     = "Southeast Asia" 
+}
+
