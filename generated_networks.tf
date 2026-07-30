@@ -62,7 +62,7 @@ resource "azurerm_subnet" "ManufacturingSystemSubnet" {
   name                 = "ManufacturingSystemSubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnetManufacturing.name
-  address_prefixes     = ["10.20.10.0/24"] 
+  address_prefixes     = ["10.30.10.0/24"] 
 }
 resource "azurerm_subnet" "SensorSubnet1" {
   name                 = "SensorSubnet1"
