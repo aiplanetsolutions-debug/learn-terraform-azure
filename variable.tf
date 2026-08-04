@@ -10,3 +10,10 @@ variable "seasia_location" {
   default     = "Southeast Asia" 
 }
 
+variable "eastus2_location" {
+  type        = string
+  description = "The region for our secondary tutorial virtual network"
+  default     = "eastus2" 
+}
+
+

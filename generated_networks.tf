@@ -4,7 +4,7 @@
 # __generated__ by Terraform
 resource "azurerm_virtual_network" "vnetCoreServices" {
   address_space           = ["10.20.0.0/16"]
-  location                = azurerm_resource_group.rg.location
+  location                = var.eastus2_location
   name                    = "CoreServicesVnet"
   resource_group_name     = azurerm_resource_group.rg.name
   }
