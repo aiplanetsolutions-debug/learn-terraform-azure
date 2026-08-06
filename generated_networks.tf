@@ -4,7 +4,7 @@
 # __generated__ by Terraform
 resource "azurerm_virtual_network" "vnetCoreServices" {
   address_space           = ["10.20.0.0/16"]
-  location                = var.eastus2_location
+  location                = var.eastus_location
   name                    = "CoreServicesVnet"
   resource_group_name     = azurerm_resource_group.rg.name
   }
@@ -54,7 +54,7 @@ resource "azurerm_subnet" "ResearchSystemSubnet" {
 resource "azurerm_virtual_network" "vnetManufacturing" {
   name                    = "ManufacturingVnet"
   resource_group_name     = azurerm_resource_group.rg.name
-  location                = var.westus_location
+  location                = var.westeurope_location
   address_space           = ["10.30.0.0/16"]
 }
 

@@ -1,7 +1,7 @@
-variable "westus_location" {
+variable "eastus_location" {
   type        = string
   description = "The region for our secondary tutorial virtual network"
-  default     = "West US" 
+  default     = "eastus" 
 }
 
 variable "seasia_location" {
@@ -10,10 +10,46 @@ variable "seasia_location" {
   default     = "Southeast Asia" 
 }
 
-variable "eastus2_location" {
+variable "westeurope_location" {
   type        = string
   description = "The region for our secondary tutorial virtual network"
-  default     = "eastus2" 
+  default     = "westeurope" 
+}
+
+variable "vm_size" {
+  type    = string
+  default = "Standard_D2s_v3" # Originally from your parameter file
+}
+
+variable "vm_name_1" {
+  type    = string
+  default = "testvm1"
+}
+
+variable "nic_name_1" {
+  type    = string
+  default = "testvm1-nic"
+}
+
+variable "vm_name_2" {
+  type    = string
+  default = "testvm2"
+}
+
+variable "nic_name_2" {
+  type    = string
+  default = "testvm2-nic"
+}
+
+variable "admin_username" {
+  type    = string
+  default = "TestUser"
+}
+
+variable "admin_password" {
+  type        = string
+  default     = "Welcome@123!" # Replace with your secure lab password
+  sensitive   = true
 }
 
 
