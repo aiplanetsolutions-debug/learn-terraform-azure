@@ -18,7 +18,7 @@ variable "eastus2_location" {
 
 variable "vm_size" {
   type    = string
-  default = "Standard_D2s_v4" # Originally from your parameter file
+  default = "Standard_D2s_v6" # Originally from your parameter file
 }
 
 variable "vm_name_1" {
