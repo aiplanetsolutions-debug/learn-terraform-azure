@@ -118,7 +118,7 @@ resource "azurerm_windows_virtual_machine" "vm1" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-datacenter"
+    sku       = "2019-datacenter-gensecond"
     version   = "latest"
   }
 
@@ -142,7 +142,7 @@ resource "azurerm_windows_virtual_machine" "vm2" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-datacenter"
+    sku       = "2019-datacenter-gensecond"
     version   = "latest"
   }
 
