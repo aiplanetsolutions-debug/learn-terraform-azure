@@ -18,7 +18,7 @@ variable "westeurope_location" {
 
 variable "vm_size" {
   type    = string
-  default = "Standard_D2s_v3" # Originally from your parameter file
+  default = "Standard_D2s_v5" # Originally from your parameter file
 }
 
 variable "vm_name_1" {
