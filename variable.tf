@@ -10,15 +10,15 @@ variable "seasia_location" {
   default     = "Southeast Asia" 
 }
 
-variable "westeurope_location" {
+variable "eastus2_location" {
   type        = string
   description = "The region for our secondary tutorial virtual network"
-  default     = "westeurope" 
+  default     = "eastus2" 
 }
 
 variable "vm_size" {
   type    = string
-  default = "Standard_D2s_v5" # Originally from your parameter file
+  default = "Standard_D2s_v4" # Originally from your parameter file
 }
 
 variable "vm_name_1" {
