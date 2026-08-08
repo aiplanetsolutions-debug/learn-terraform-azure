@@ -40,7 +40,7 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
      # 👇 UPDATED CHECKOV STEP WITH SEVERITY FILTER & DASHBOARD OUTPUT
-     - name: "Run Checkov Security Scan"
+      - name: "Run Checkov Security Scan"
         uses: bridgecrewio/checkov-action@master
         with:
           framework: terraform
