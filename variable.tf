@@ -48,7 +48,7 @@ variable "admin_username" {
 
 variable "admin_password" {
   type        = string
-  default     = "Welcome@123!" # Replace with your secure lab password
+  default     = "Test123" # Replace with your secure lab password
   sensitive   = true
 }
 

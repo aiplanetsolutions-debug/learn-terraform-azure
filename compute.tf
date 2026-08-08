@@ -35,7 +35,7 @@ resource "azurerm_network_security_group" "nsg1" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "*"
+    source_address_prefix      = "71.17.169.75/32"
     destination_address_prefix = "*"
   }
 }
@@ -53,7 +53,7 @@ resource "azurerm_network_security_group" "nsg2" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "*"
+    source_address_prefix      = "71.17.169.75/32"
     destination_address_prefix = "*"
   }
 }
@@ -126,6 +126,12 @@ resource "azurerm_windows_virtual_machine" "vm1" {
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
+   # 👇 TRACKS INITIAL SETUP ONLY; MANUALLY CHANGED CREDENTIALS ARE PROTECTED
+  lifecycle {
+    ignore_changes = [
+      admin_password,
+    ]
+  }
 }
 
 resource "azurerm_windows_virtual_machine" "vm2" {
@@ -149,5 +155,11 @@ resource "azurerm_windows_virtual_machine" "vm2" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
+  }
+   # 👇 TRACKS INITIAL SETUP ONLY; MANUALLY CHANGED CREDENTIALS ARE PROTECTED
+  lifecycle {
+    ignore_changes = [
+      admin_password,
+    ]
   }
 }

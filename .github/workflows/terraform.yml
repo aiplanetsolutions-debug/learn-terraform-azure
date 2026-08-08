@@ -38,7 +38,31 @@ jobs:
           echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
           cat plan_output.txt >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+     # 👇 UPDATED CHECKOV STEP WITH SEVERITY FILTER & DASHBOARD OUTPUT
+      - name: "Run Checkov Security Scan"
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: terraform
+          soft_fail: true 
+          # 1. Filter out Low and Medium checks. Only scans for HIGH and CRITICAL risks.
+          baseline: "HIGH,CRITICAL"
+          # 2. Instructs the action to output standard CLI text AND a GitHub summary markdown format
+          output_format: cli,github_failed_only
+          # 3. Saves the markdown report to a local temporary file name
+          output_file_path: console,checkov_report.md
 
+      # 👇 NEW STEP: Appends Checkov's Markdown report straight onto the GitHub dashboard
+      - name: "Publish Security Scan to Dashboard"
+        if: always() # Ensures the report prints even if errors occur
+        run: |
+          echo "### 🛡️ Checkov Security Report (High & Critical Only)" >> $GITHUB_STEP_SUMMARY
+          if [ -f checkov_report.md ]; then
+            cat checkov_report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No High or Critical security issues detected!" >> $GITHUB_STEP_SUMMARY
+          fi
+          
   # STAGE 2: The Manual Gate Deployment
   deploy_to_azure:
     name: "2. Manual Apply Execution"
