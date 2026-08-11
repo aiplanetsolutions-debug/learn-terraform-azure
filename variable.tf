@@ -56,6 +56,10 @@ variable "admin_username" {
   default = "TestUser"
 }
 
-
+variable "admin_password" {
+  type        = string
+  default     = "*" # Replace with your secure lab password
+  sensitive   = true
+}
 
 
