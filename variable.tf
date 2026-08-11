@@ -41,6 +41,16 @@ variable "nic_name_2" {
   default = "testvm2-nic"
 }
 
+variable "vm_name_3" {
+  type    = string
+  default = "ManufacturingVM"
+}
+
+variable "nic_name_3" {
+  type    = string
+  default = "ManufacturingVM-nic"
+}
+
 variable "admin_username" {
   type    = string
   default = "TestUser"

@@ -18,6 +18,14 @@ resource "azurerm_public_ip" "pip2" {
   sku                 = "Standard"
 }
 
+resource "azurerm_public_ip" "pip3" {
+  name                = "ManufacturingVM-pip"
+  location            = var.eastus2_location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
 # ==============================================================================
 # NETWORK SECURITY GROUPS (Page 4 & Page 6)
 # ==============================================================================
@@ -35,7 +43,7 @@ resource "azurerm_network_security_group" "nsg1" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "71.17.169.75/32"
+    source_address_prefix      = "*" #71.17.169.75/32
     destination_address_prefix = "*"
   }
 }
@@ -53,7 +61,25 @@ resource "azurerm_network_security_group" "nsg2" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "71.17.169.75/32"
+    source_address_prefix      = "*" #71.17.169.75/32
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_security_group" "nsg3" {
+  name                = "ManufacturingVM-nsg"
+  location            = var.eastus2_location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "default-allow-rdp"
+    priority                   = 1000
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*" #71.17.169.75/32
     destination_address_prefix = "*"
   }
 }
@@ -88,6 +114,19 @@ resource "azurerm_network_interface" "nic2" {
   }
 }
 
+resource "azurerm_network_interface" "nic3" {
+  name                = var.nic_name_3
+  location            = var.eastus2_location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.ManufacturingSystemSubnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip3.id
+  }
+}
+
 # Bind NSGs to their respective Network Interfaces
 resource "azurerm_network_interface_security_group_association" "nsg_assoc1" {
   network_interface_id      = azurerm_network_interface.nic1.id
@@ -97,6 +136,11 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc1" {
 resource "azurerm_network_interface_security_group_association" "nsg_assoc2" {
   network_interface_id      = azurerm_network_interface.nic2.id
   network_security_group_id = azurerm_network_security_group.nsg2.id
+}
+
+resource "azurerm_network_interface_security_group_association" "nsg_assoc3" {
+  network_interface_id      = azurerm_network_interface.nic3.id
+  network_security_group_id = azurerm_network_security_group.nsg3.id
 }
 
 # ==============================================================================
@@ -163,3 +207,34 @@ resource "azurerm_windows_virtual_machine" "vm2" {
     ]
   }
 }
+
+resource "azurerm_windows_virtual_machine" "vm3" {
+  name                = var.vm_name_3
+  computer_name       = var.vm_name_3
+  location            = var.eastus2_location
+  resource_group_name = azurerm_resource_group.rg.name
+  size                = var.vm_size
+  admin_username      = var.admin_username
+  admin_password      = var.admin_password
+
+  network_interface_ids = [azurerm_network_interface.nic3.id]
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-datacenter-gensecond"
+    version   = "latest"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+   # 👇 TRACKS INITIAL SETUP ONLY; MANUALLY CHANGED CREDENTIALS ARE PROTECTED
+  lifecycle {
+    ignore_changes = [
+      admin_password,
+    ]
+  }
+}
+
