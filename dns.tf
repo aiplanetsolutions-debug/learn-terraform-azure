@@ -12,6 +12,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "coreservices_link" {
   # Fetches your existing central VNet ID 
   # Note: Ensure "azurerm_virtual_network.core_vnet" matches your actual local VNet resource block name
   virtual_network_id    = azurerm_virtual_network.vnetCoreServices.id 
+  virtual_network_id    = azurerm_virtual_network.vnetManufacturing.id 
 
   # This checkbox maps directly to the "Enable auto registration" setting
   registration_enabled  = true 
