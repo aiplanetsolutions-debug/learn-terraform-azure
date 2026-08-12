@@ -68,3 +68,25 @@ variable "home_ip" {
   default     = "71.17.169.75/32" # 👈 Replace x.x.x.x with your actual home IP. Keep the /32 prefix.
 }
 
+variable "azure_regions_map" {
+  type = map(object({
+    priority = number
+    tag      = string
+  }))
+  default = {
+    "eastus" = {
+      priority = 1010
+      tag      = "AzureCloud.eastus"
+    }
+    "eastus2" = {
+      priority = 1020
+      tag      = "AzureCloud.eastus2"
+    }
+    "seasia" = {
+      priority = 1030
+      tag      = "AzureCloud.southeastasia"
+    }
+  }
+}
+
+

@@ -47,20 +47,20 @@ resource "azurerm_network_security_group" "nsg1" {
     destination_address_prefix = "*"
   }
 
-  security_rule {
-    name                       = "allow-rdp-from-azure-tags"
-    priority                   = 1010
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3389"
-    source_address_prefixes    = [
-      "AzureCloud.eastus",
-      "AzureCloud.eastus2",
-      "AzureCloud.southeastasia"
-    ]
-    destination_address_prefix = "*"
+ # Rules B: Dynamic loop that auto-generates the separate Service Tag blocks
+  dynamic "security_rule" {
+    for_each = var.azure_regions_map
+    content {
+      name                       = "allow-rdp-from-azure-${security_rule.key}"
+      priority                   = security_rule.value.priority
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "3389"
+      source_address_prefix      = security_rule.value.tag # Singular property used here
+      destination_address_prefix = "*"
+    }
   }
 }
 
@@ -81,20 +81,20 @@ resource "azurerm_network_security_group" "nsg2" {
     destination_address_prefix = "*"
   }
 
-  security_rule {
-    name                       = "allow-rdp-from-azure-tags"
-    priority                   = 1010
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3389"
-    source_address_prefixes    = [
-      "AzureCloud.eastus",
-      "AzureCloud.eastus2",
-      "AzureCloud.southeastasia"
-    ]
-    destination_address_prefix = "*"
+ # Rules B: Dynamic loop that auto-generates the separate Service Tag blocks
+  dynamic "security_rule" {
+    for_each = var.azure_regions_map
+    content {
+      name                       = "allow-rdp-from-azure-${security_rule.key}"
+      priority                   = security_rule.value.priority
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "3389"
+      source_address_prefix      = security_rule.value.tag # Singular property used here
+      destination_address_prefix = "*"
+    }
   }
 }
 
@@ -115,20 +115,20 @@ resource "azurerm_network_security_group" "nsg3" {
     destination_address_prefix = "*"
   }
 
-  security_rule {
-    name                       = "allow-rdp-from-azure-tags"
-    priority                   = 1010
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3389"
-    source_address_prefixes    = [
-      "AzureCloud.eastus",
-      "AzureCloud.eastus2",
-      "AzureCloud.southeastasia"
-    ]
-    destination_address_prefix = "*"
+  # Rules B: Dynamic loop that auto-generates the separate Service Tag blocks
+  dynamic "security_rule" {
+    for_each = var.azure_regions_map
+    content {
+      name                       = "allow-rdp-from-azure-${security_rule.key}"
+      priority                   = security_rule.value.priority
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "3389"
+      source_address_prefix      = security_rule.value.tag # Singular property used here
+      destination_address_prefix = "*"
+    }
   }
 }
 
