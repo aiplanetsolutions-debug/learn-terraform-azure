@@ -1,3 +1,4 @@
+# location variables
 variable "eastus_location" {
   type        = string
   description = "The region for our secondary tutorial virtual network"
@@ -16,6 +17,7 @@ variable "eastus2_location" {
   default     = "eastus2" 
 }
 
+#VM size variables
 variable "vm_size" {
   type    = string
   default = "Standard_D2s_v7" # Originally from your parameter file
@@ -62,6 +64,7 @@ variable "admin_password" {
   sensitive   = true
 }
 
+# IP Address Variable
 variable "home_ip" {
   type        = string
   description = "Your home public IP address with CIDR mask"
