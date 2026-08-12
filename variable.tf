@@ -65,6 +65,6 @@ variable "admin_password" {
 variable "home_ip" {
   type        = string
   description = "Your home public IP address with CIDR mask"
-  default     = "71.17.169.75/32 # 👈 Replace x.x.x.x with your actual home IP. Keep the /32 prefix.
+  default     = "71.17.169.75/32" # 👈 Replace x.x.x.x with your actual home IP. Keep the /32 prefix.
 }
 
