@@ -35,17 +35,27 @@ resource "azurerm_network_security_group" "nsg1" {
   location            = var.eastus_location
   resource_group_name = azurerm_resource_group.rg.name
 
-  security_rule {
-    name                       = "default-allow-rdp"
+   security_rule {
+    name                       = "allow-rdp-from-home"
     priority                   = 1000
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    # Combined home IP and Azure regional Service Tags
+    source_address_prefixes    = [var.home_ip]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-rdp-from-azure-tags"
+    priority                   = 1010
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
     source_address_prefixes    = [
-      var.home_ip,
       "AzureCloud.eastus",
       "AzureCloud.eastus2",
       "AzureCloud.southeastasia"
@@ -59,17 +69,27 @@ resource "azurerm_network_security_group" "nsg2" {
   location            = var.eastus_location
   resource_group_name = azurerm_resource_group.rg.name
 
-  security_rule {
-    name                       = "default-allow-rdp"
+    security_rule {
+    name                       = "allow-rdp-from-home"
     priority                   = 1000
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    # Combined home IP and Azure regional Service Tags
+    source_address_prefixes    = [var.home_ip]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-rdp-from-azure-tags"
+    priority                   = 1010
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
     source_address_prefixes    = [
-      var.home_ip,
       "AzureCloud.eastus",
       "AzureCloud.eastus2",
       "AzureCloud.southeastasia"
@@ -83,17 +103,27 @@ resource "azurerm_network_security_group" "nsg3" {
   location            = var.eastus2_location
   resource_group_name = azurerm_resource_group.rg.name
 
-  security_rule {
-    name                       = "default-allow-rdp"
+    security_rule {
+    name                       = "allow-rdp-from-home"
     priority                   = 1000
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    # Combined home IP and Azure regional Service Tags
+    source_address_prefixes    = [var.home_ip]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-rdp-from-azure-tags"
+    priority                   = 1010
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
     source_address_prefixes    = [
-      var.home_ip,
       "AzureCloud.eastus",
       "AzureCloud.eastus2",
       "AzureCloud.southeastasia"
