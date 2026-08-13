@@ -16,7 +16,7 @@ resource "azurerm_subnet" "DatabaseSubnet" {
   address_prefixes     = ["10.20.20.0/24"] 
 }
 
-resource "azurerm_subnet" "GatewaySubnetCoreServices" {
+resource "azurerm_subnet" "GatewaySubnet" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnetCoreServices.name
