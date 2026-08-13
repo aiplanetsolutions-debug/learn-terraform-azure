@@ -16,7 +16,7 @@ resource "azurerm_subnet" "DatabaseSubnet" {
   address_prefixes     = ["10.20.20.0/24"] 
 }
 
-resource "azurerm_subnet" "GatewaySubnet" {
+resource "azurerm_subnet" "GatewaySubnetCoreServices" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnetCoreServices.name
@@ -64,7 +64,7 @@ resource "azurerm_subnet" "ManufacturingSystemSubnet" {
   virtual_network_name = azurerm_virtual_network.vnetManufacturing.name
   address_prefixes     = ["10.30.10.0/24"] 
 }
-resource "azurerm_subnet" "GatewaySubnet" {
+resource "azurerm_subnet" "GatewaySubnetManufacturing" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnetManufacturing.name
