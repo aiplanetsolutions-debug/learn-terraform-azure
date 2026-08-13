@@ -86,43 +86,43 @@ resource "azurerm_subnet" "SensorSubnet3" {
 # ==============================================================================
 # 1. PEERING DIRECTION: CoreServicesVnet -> ManufacturingVnet
 # ==============================================================================
-resource "azurerm_virtual_network_peering" "core_to_manufacturing" {
-  name                         = "CoreServicesVnet-to-ManufacturingVnet"
-  resource_group_name          = azurerm_resource_group.rg.name
+##resource "azurerm_virtual_network_peering" "core_to_manufacturing" {
+  ##name                         = "CoreServicesVnet-to-ManufacturingVnet"
+  ##resource_group_name          = azurerm_resource_group.rg.name
   
   # The source VNet initiating the peering link
-  virtual_network_name         = azurerm_virtual_network.vnetCoreServices.name 
+  ##virtual_network_name         = azurerm_virtual_network.vnetCoreServices.name 
   
   # The target remote VNet destination ID
-  remote_virtual_network_id    = azurerm_virtual_network.vnetManufacturing.id
+  ##remote_virtual_network_id    = azurerm_virtual_network.vnetManufacturing.id
 
   # Remote virtual network peering settings (Enabled)
-  allow_virtual_network_access = true
-  allow_forwarded_traffic      = true
+  ##allow_virtual_network_access = true
+  ##allow_forwarded_traffic      = true
 
   # Gateway transit settings (Leave false/disabled unless configuring a Hub-Spoke VPN)
-  allow_gateway_transit        = false
-  use_remote_gateways          = false
-}
+  ##allow_gateway_transit        = false
+  ##use_remote_gateways          = false
+##}
 
 # ==============================================================================
 # 2. PEERING DIRECTION: ManufacturingVnet -> CoreServicesVnet
 # ==============================================================================
-resource "azurerm_virtual_network_peering" "manufacturing_to_core" {
-  name                         = "ManufacturingVnet-to-CoreServicesVnet"
-  resource_group_name          = azurerm_resource_group.rg.name
+##resource "azurerm_virtual_network_peering" "manufacturing_to_core" {
+  ##name                         = "ManufacturingVnet-to-CoreServicesVnet"
+  ##resource_group_name          = azurerm_resource_group.rg.name
   
   # The source VNet initiating the return link
-  virtual_network_name         = azurerm_virtual_network.vnetManufacturing.name 
+  ##virtual_network_name         = azurerm_virtual_network.vnetManufacturing.name 
   
   # The target remote VNet destination ID
-  remote_virtual_network_id    = azurerm_virtual_network.vnetCoreServices.id
+  ##remote_virtual_network_id    = azurerm_virtual_network.vnetCoreServices.id
 
   # Local virtual network peering settings (Enabled)
-  allow_virtual_network_access = true
-  allow_forwarded_traffic      = true
+  ##allow_virtual_network_access = true
+  ##allow_forwarded_traffic      = true
 
-  allow_gateway_transit        = false
-  use_remote_gateways          = false
-}
+  ##allow_gateway_transit        = false
+  ##use_remote_gateways          = false
+##}
 
