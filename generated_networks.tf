@@ -132,3 +132,106 @@ resource "azurerm_subnet" "SensorSubnet3" {
   ##use_remote_gateways          = false
 ##}
 
+# =========================================================================
+# TASK 6: CoreServicesVnet Gateway Infrastructure
+# =========================================================================
+
+# Create the standard Public IP required by the CoreServices gateway
+resource "azurerm_public_ip" "pip_coreservices_gw" {
+  name                = "CoreServicesVnetGateway-ip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+# Deploy the CoreServices Virtual Network Gateway
+resource "azurerm_virtual_network_gateway" "coreservices_gw" {
+  name                = "CoreServicesVnetGateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+
+  type     = "Vpn"
+  vpn_type = "RouteBased" # Required for VpnGw1AZ SKU
+
+  active_active = false
+  enable_bgp    = false
+  sku           = "VpnGw1AZ"
+  generation    = "Generation1"
+
+  ip_configuration {
+    name                          = "vnetGatewayConfig"
+    public_ip_address_id          = azurerm_public_ip.pip_coreservices_gw.id
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.GatewaySubnet.id # Reference from your previous code
+  }
+}
+
+
+# =========================================================================
+# TASK 7: ManufacturingVnet Gateway Infrastructure
+# =========================================================================
+
+# Create the standard Public IP required by the Manufacturing gateway
+resource "azurerm_public_ip" "pip_manufacturing_gw" {
+  name                = "ManufacturingVnetGateway-ip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "var.eastus2_location" # 
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+# Deploy the Manufacturing Virtual Network Gateway
+resource "azurerm_virtual_network_gateway" "manufacturing_gw" {
+  name                = "ManufacturingVnetGateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "var.eastus2_location" # 
+
+  type     = "Vpn"
+  vpn_type = "RouteBased"
+
+  active_active = false
+  enable_bgp    = false
+  sku           = "VpnGw1AZ"
+  generation    = "Generation1"
+
+  ip_configuration {
+    name                          = "vnetGatewayConfig"
+    public_ip_address_id          = azurerm_public_ip.pip_manufacturing_gw.id
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.GatewaySubnetManufacturing.id # 
+}
+}
+
+# =========================================================================
+# TASK 8: Connection - CoreServicesVnet to ManufacturingVnet
+# =========================================================================
+
+resource "azurerm_virtual_network_gateway_connection" "coreservices_to_manufacturing" {
+  name                = "CoreServicesGW-to-ManufacturingGW"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+
+  type                               = "Vnet2Vnet"
+  virtual_network_gateway_id         = azurerm_virtual_network_gateway.coreservices_gw.id
+  peer_virtual_network_gateway_id    = azurerm_virtual_network_gateway.manufacturing_gw.id
+
+  shared_key = "abc123"
+}
+
+
+# =========================================================================
+# TASK 9: Connection - ManufacturingVnet to CoreServicesVnet
+# =========================================================================
+
+resource "azurerm_virtual_network_gateway_connection" "manufacturing_to_coreservices" {
+  name                = "ManufacturingGW-to-CoreServicesGW"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus2_location
+
+  type                               = "Vnet2Vnet"
+  virtual_network_gateway_id         = azurerm_virtual_network_gateway.manufacturing_gw.id
+  peer_virtual_network_gateway_id    = azurerm_virtual_network_gateway.coreservices_gw.id
+
+  shared_key = "abc123"
+}
