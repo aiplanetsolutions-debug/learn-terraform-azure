@@ -143,6 +143,8 @@ resource "azurerm_public_ip" "pip_coreservices_gw" {
   location            = var.eastus_location
   allocation_method   = "Static"
   sku                 = "Standard"
+  #Configures zones required by VpnGw1AZ
+  zones               = ["1", "2", "3"] 
 }
 
 # Deploy the CoreServices Virtual Network Gateway
@@ -179,6 +181,8 @@ resource "azurerm_public_ip" "pip_manufacturing_gw" {
   location            = var.eastus2_location # 
   allocation_method   = "Static"
   sku                 = "Standard"
+  #Configures zones required by VpnGw1AZ
+  zones               = ["1", "2", "3"] 
 }
 
 # Deploy the Manufacturing Virtual Network Gateway
