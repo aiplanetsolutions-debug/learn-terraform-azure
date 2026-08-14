@@ -1,7 +1,6 @@
-# __generated__ by Terraform
-# Please review these resources and move them into your main configuration files.
-
-# __generated__ by Terraform
+# ==============================================================================
+# VNET & SUBNET
+# ==============================================================================
 resource "azurerm_virtual_network" "vnetCoreServices" {
   address_space           = ["10.20.0.0/16"]
   location                = var.eastus_location
@@ -238,4 +237,50 @@ resource "azurerm_virtual_network_gateway_connection" "manufacturing_to_coreserv
   peer_virtual_network_gateway_id    = azurerm_virtual_network_gateway.coreservices_gw.id
 
   shared_key = "abc123"
+}
+
+# =========================================================================
+# Site-to-Site Gateway: Local Network Target (On-Prem Office)
+# =========================================================================
+resource "azurerm_local_network_gateway" "on_prem_office_manual" {
+  name                = "OnPremOffice-LocalGateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+
+  gateway_address     = "20.20.20.0"
+  address_space       = ["172.16.0.0/16"]
+}
+
+# =========================================================================
+# Site-to-Site Connection: CoreServices Gateway to On-Prem Office
+# =========================================================================
+resource "azurerm_virtual_network_gateway_connection" "on_prem_office_manual" {
+  name                = "CoreServices-to-OnPremOffice"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+
+  type                               = "IPsec"
+  connection_protocol                = "IKEv1"
+  connection_mode                    = "Default"
+  dpd_timeout_seconds                = 45
+  enable_bgp                         = false
+  use_policy_based_traffic_selectors = false
+
+  # DYNAMIC REFERENCES: No more hardcoded resource IDs
+  virtual_network_gateway_id      = azurerm_virtual_network_gateway.coreservices_gw.id
+  local_network_gateway_id        = azurerm_local_network_gateway.on_prem_office_manual.id
+
+  # MANDATORY SECURITY TUNNEL KEY (Replace with your actual pre-shared key)
+  shared_key = "abc123" 
+
+  ipsec_policy {
+    dh_group         = "DHGroup14"
+    ike_encryption   = "AES256"
+    ike_integrity    = "SHA384"
+    ipsec_encryption = "AES256"
+    ipsec_integrity  = "SHA256"
+    pfs_group        = "None"
+    sa_lifetime      = 27000
+    # FIX: sa_datasize = 0 removed to pass schema validation
+  }
 }

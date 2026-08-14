@@ -1,0 +1,15 @@
+# run this in bash to import manual config: terraform plan -generate-config-out="generated_manual_resources.tf"
+
+import {
+  # Define what resource type and local name you want
+  to = azurerm_virtual_network_gateway_connection.on_prem_office_manual
+
+  # Paste the exact Azure Resource ID you copied from Step 1
+    id = "/subscriptions/3f84c873-6292-45f2-b495-de2bbeff1646/resourceGroups/ContosoResourceGroup/providers/Microsoft.Network/connections/CoreServices-to-OnPremOffice"
+}
+
+# Local Network Gateway Import
+import {
+  to = azurerm_local_network_gateway.on_prem_office_manual
+  id = "/subscriptions/3f84c873-6292-45f2-b495-de2bbeff1646/resourceGroups/ContosoResourceGroup/providers/Microsoft.Network/localNetworkGateways/OnPremOffice-LocalGateway"
+}

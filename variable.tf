@@ -66,9 +66,9 @@ variable "admin_password" {
 
 # IP Address Variable
 variable "home_ip" {
-  type        = string
+  type        = list(string)
   description = "Your home public IP address with CIDR mask"
-  default     = "71.17.169.75/32" # 👈 Replace x.x.x.x with your actual home IP. Keep the /32 prefix.
+  default     = ["71.17.169.75/32","172.16.0.0"] # 👈 Replace x.x.x.x with your actual home IP. 
 }
 
 variable "azure_regions_map" {
