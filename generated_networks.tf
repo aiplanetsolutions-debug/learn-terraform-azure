@@ -247,7 +247,7 @@ resource "azurerm_local_network_gateway" "on_prem_office_manual" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.eastus_location
 
-  gateway_address     = "20.20.20.0"
+  gateway_address     = "71.17.169.75"
   address_space       = ["172.16.0.0/16"]
 }
 
