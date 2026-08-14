@@ -176,7 +176,7 @@ resource "azurerm_virtual_network_gateway" "coreservices_gw" {
 resource "azurerm_public_ip" "pip_manufacturing_gw" {
   name                = "ManufacturingVnetGateway-ip"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = "var.eastus2_location" # 
+  location            = var.eastus2_location # 
   allocation_method   = "Static"
   sku                 = "Standard"
 }
@@ -185,7 +185,7 @@ resource "azurerm_public_ip" "pip_manufacturing_gw" {
 resource "azurerm_virtual_network_gateway" "manufacturing_gw" {
   name                = "ManufacturingVnetGateway"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = "var.eastus2_location" # 
+  location            = var.eastus2_location # 
 
   type     = "Vpn"
   vpn_type = "RouteBased"
