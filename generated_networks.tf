@@ -271,7 +271,7 @@ resource "azurerm_virtual_network_gateway_connection" "on_prem_office_manual" {
   local_network_gateway_id        = azurerm_local_network_gateway.on_prem_office_manual.id
 
   # MANDATORY SECURITY TUNNEL KEY (Replace with your actual pre-shared key)
-  shared_key = "abc123" 
+  shared_key = "Agbalagba@20080228" 
 
   ipsec_policy {
     dh_group         = "DHGroup14"
