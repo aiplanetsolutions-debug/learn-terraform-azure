@@ -87,4 +87,4 @@ jobs:
         run: terraform init
 
       - name: "Terraform Apply"
-        run: terraform destroy -auto-approve # Safe because you manually authorized it to run
+        run: terraform apply -auto-approve # Safe because you manually authorized it to run

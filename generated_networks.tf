@@ -288,3 +288,72 @@ resource "azurerm_virtual_network_gateway_connection" "on_prem_office_manual" {
 }
 
 */  # Closing tag
+
+# =========================================================================
+# TASK 1: Create a Virtual WAN (Global Blueprint Layer)
+# =========================================================================
+resource "azurerm_virtual_wan" "vwan" {
+  name                = "ContosoVirtualWAN"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location # Metadata control plane anchor region
+  type                = "Standard"          # Matches "Standard" portal selection
+}
+
+# =========================================================================
+# TASK 2: Create a Virtual Hub (Basics Tab Configuration)
+# =========================================================================
+resource "azurerm_virtual_hub" "eastus2_hub" {
+  name                = "ContosoVirtualWANHub-EastUS2" 
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "eastus2"                     
+  virtual_wan_id      = azurerm_virtual_wan.vwan.id
+  address_prefix      = "10.60.0.0/24"               
+
+  # PORTAL MATCH: "Virtual hub capacity: 2 Routing infrastructure units"
+  # In Azure, 2 Routing Units is the exact definition of a "Standard" hub SKU.
+  sku = "Standard"
+
+  # PORTAL MATCH: "Hub routing preference: leave the default"
+  # By omitting the 'hub_routing_preference' parameter, Terraform allows Azure 
+  # to apply its default platform routing preference ("ExpressRoute" or "ASPath").
+}
+
+# =========================================================================
+# TASK 2 (Continued): Site-to-Site Tab Configuration (VPN Gateway: Yes)
+# =========================================================================
+resource "azurerm_vpn_gateway" "hub_s2s_gateway" {
+  name                = "ContosoVirtualWANHub-EastUS2-VPNGateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "eastus2"
+  virtual_hub_id      = azurerm_virtual_hub.eastus2_hub.id # Links it to the Hub above
+
+  # PORTAL MATCH: "Gateway scale units: 1 scale unit = 500 Mbps x 2"
+  scale_unit = 1
+
+  # PORTAL MATCH: "Routing preference: leave the default"
+  # Omitted internet routing overrides to let the system default to Microsoft's premium backbone.
+}
+
+
+# =========================================================================
+# TASK 3: Connect the Southeast Asia Research VNet to the East US2 Hub
+# =========================================================================
+resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
+  name                      = "ContosoVirtualWAN-to-ResearchVNet"
+  virtual_hub_id            = azurerm_virtual_hub.eastus2_hub.id
+  remote_virtual_network_id = azurerm_virtual_network.vnetResearch.id # Dynamic resource reference
+
+  # Enforces explicit route table mappings specified in the exercise
+  routing {
+    associated_route_table_id = "${azurerm_virtual_hub.eastus2_hub.id}/hubRouteTables/defaultRouteTable"
+    
+    # Portal equivalent: "Propagate to none: Yes"
+    propagated_route_table {
+      labels          = []
+      route_table_ids = []
+    }
+  }
+
+  # Crucial: Forces connection to wait until the underlying hub VPN gateway is online
+  depends_on = [azurerm_vpn_gateway.hub_s2s_gateway]
+}
