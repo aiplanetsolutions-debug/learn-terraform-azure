@@ -349,8 +349,8 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
     
     # Portal equivalent: "Propagate to none: Yes"
     propagated_route_table {
-      labels          = []
-      route_table_ids = []
+      labels          = ["default"]
+      route_table_ids = ["${azurerm_virtual_hub.eastus2_hub.id}/hubRouteTables/defaultRouteTable"]
     }
   }
 
