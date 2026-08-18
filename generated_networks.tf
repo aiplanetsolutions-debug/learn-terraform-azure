@@ -238,6 +238,8 @@ resource "azurerm_virtual_network_gateway_connection" "manufacturing_to_coreserv
 
   shared_key = "abc123"
 }
+/*  
+# Note: Keep this as is to BLOCK the section & # to UNBLOCK
 
 # =========================================================================
 # Site-to-Site Gateway: Local Network Target (On-Prem Office)
@@ -284,3 +286,5 @@ resource "azurerm_virtual_network_gateway_connection" "on_prem_office_manual" {
     # FIX: sa_datasize = 0 removed to pass schema validation
   }
 }
+
+*/  # Closing tag
