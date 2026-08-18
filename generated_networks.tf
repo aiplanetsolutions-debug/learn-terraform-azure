@@ -289,6 +289,7 @@ resource "azurerm_virtual_network_gateway_connection" "on_prem_office_manual" {
 
 */  # Closing tag
 
+/*  
 # =========================================================================
 # TASK 1: Create a Virtual WAN (Global Blueprint Layer)
 # =========================================================================
@@ -357,3 +358,4 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
   # Crucial: Forces connection to wait until the underlying hub VPN gateway is online
   depends_on = [azurerm_vpn_gateway.hub_s2s_gateway]
 }
+*/ 
