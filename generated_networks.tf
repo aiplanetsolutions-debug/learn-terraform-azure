@@ -359,3 +359,91 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
   depends_on = [azurerm_vpn_gateway.hub_s2s_gateway]
 }
 */ 
+
+# =========================================================================
+# TASK 1: ExpressRoute Virtual Network Gateway
+# =========================================================================
+resource "azurerm_virtual_network_gateway" "coreservices_er_gw" {
+  name                = "CoreServicesVnetGateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location # Matches East US region selection
+
+  type     = "ExpressRoute" # PORTAL MATCH: Gateway type
+  sku      = "Standard"     # PORTAL MATCH: SKU
+  vpn_type = "RouteBased"   # Default provider requirement
+
+  # ExpressRoute deployment scales do not utilize the "generation" attribute
+  
+  ip_configuration {
+    name                          = "vnetGatewayConfig"
+    private_ip_address_allocation = "Dynamic"
+    
+    # DYNAMIC REFERENCE: Attaches straight to your existing CoreServices GatewaySubnet
+    subnet_id                     = azurerm_subnet.GatewaySubnet.id
+	
+	# ADD THIS LINE: Satisfies the Terraform v4 schema required validation rule
+    public_ip_address_id          = azurerm_public_ip.er_gw_pip.id
+  }
+}
+
+# =========================================================================
+# REQUIRED FIX: Standard Public IP for ExpressRoute Gateway Validation
+# =========================================================================
+resource "azurerm_public_ip" "er_gw_pip" {
+  name                = "CoreServicesVnetGateway-pip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+  allocation_method   = "Static"
+  sku                 = "Standard"  # Azure requires Standard SKU for gateways
+}
+
+# =========================================================================
+# TASK 2 : Create and Provision ExpressRoute Circuit
+# =========================================================================
+resource "azurerm_express_route_circuit" "test_er_circuit" {
+  name                = "TestERCircuit" # Portal: Circuit Name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "eastus2"       # The peering location and MS entrance point oe edge facility
+
+  # Portal: Provider, Peering Location, & Bandwidth Configuration
+  service_provider_name = "Equinix"
+  peering_location      = "Seattle"
+  bandwidth_in_mbps     = 50
+
+  sku {
+    tier = "Standard" # Portal: SKU tier
+    family = "MeteredData"  # Portal: Data metering billing model
+  }
+
+  tags = {}
+}
+
+# =========================================================================
+# TASK 3: ExpressRoute Virtual Network Gateway Connection (The Bridge)
+# =========================================================================
+resource "azurerm_virtual_network_gateway_connection" "er_vnet_connection" {
+  name                = "CoreServicesToTestERCircuit"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.eastus_location
+
+  type                       = "ExpressRoute"
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.coreservices_er_gw.id
+  express_route_circuit_id   = azurerm_express_route_circuit.test_er_circuit.id
+}
+
+# =========================================================================
+# TASK 3: ExpressRoute BGP Private Peering Configuration
+# =========================================================================
+resource "azurerm_express_route_circuit_peering" "private_peering" {
+  peering_type                  = "AzurePrivatePeering"
+  express_route_circuit_name    = azurerm_express_route_circuit.test_er_circuit.name
+  resource_group_name           = azurerm_resource_group.rg.name
+  
+  peer_asn                      = 65001          # Your On-Premises BGP Autonomous System Number
+  primary_peer_address_prefix   = "192.168.11.0/30"  # Subnet allocation for primary physical link point-to-point
+  secondary_peer_address_prefix = "192.168.11.4/30"  # Subnet allocation for secondary physical link point-to-point
+  vlan_id                       = 11             # The Dot1Q Client Tag you are using for data isolation
+
+  # Option for MD5 Security Encryption
+  # shared_key                  = "YourSecretMESSKey" 
+}
