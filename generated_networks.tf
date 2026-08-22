@@ -89,6 +89,65 @@ resource "azurerm_subnet" "SensorSubnet3" {
 }
 
 # ==============================================================================
+# AZURE BASTION VNETs & SUBNET
+# ==============================================================================
+resource "azurerm_virtual_network" "intlb_vnet" {
+  name                = "IntLB-VNet"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  address_space       = ["10.1.0.0/16"]
+}
+
+# 1. Backend Subnet (10.1.0.0/24)
+resource "azurerm_subnet" "backend_subnet" {
+  name                 = "myBackendSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.1.0.0/24"]
+}
+
+# 2. Frontend Subnet (10.1.2.0/24)
+resource "azurerm_subnet" "frontend_subnet" {
+  name                 = "myFrontEndSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.1.2.0/24"]
+}
+
+# 3. Dedicated Azure Bastion Subnet (Must be exactly named "AzureBastionSubnet")
+resource "azurerm_subnet" "bastion_subnet" {
+  name                 = "AzureBastionSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.0.1.0/26"] # Automatically carves out a valid space inside your /16
+}
+
+# ==============================================================================
+# AZURE BASTION DEPENDENCIES & HOST
+# ==============================================================================
+
+# Required Public IP for Bastion (Must be Standard SKU and Static allocation)
+resource "azurerm_public_ip" "bastion_pip" {
+  name                = "myBastionIP"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+# The Bastion Host Service
+resource "azurerm_bastion_host" "bastion" {
+  name                = "myBastionHost"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.bastion_subnet.id
+    public_ip_address_id = azurerm_public_ip.bastion_pip.id
+  }
+}
+# ==============================================================================
 # 1. PEERING DIRECTION: CoreServicesVnet -> ManufacturingVnet
 # ==============================================================================
 ##resource "azurerm_virtual_network_peering" "core_to_manufacturing" {
@@ -364,7 +423,7 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
 # TASK 1: ExpressRoute Virtual Network Gateway
 # =========================================================================
 resource "azurerm_virtual_network_gateway" "coreservices_er_gw" {
-  name                = "CoreServicesVnetGateway"
+  name                = "CoreServicesVnetGateway_ER"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.eastus_location # Matches East US region selection
 
@@ -390,7 +449,7 @@ resource "azurerm_virtual_network_gateway" "coreservices_er_gw" {
 # REQUIRED FIX: Standard Public IP for ExpressRoute Gateway Validation
 # =========================================================================
 resource "azurerm_public_ip" "er_gw_pip" {
-  name                = "CoreServicesVnetGateway-pip"
+  name                = "CoreServicesVnetGateway_ER-pip"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.eastus_location
   allocation_method   = "Static"
