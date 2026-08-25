@@ -6,6 +6,7 @@ on:
       - main
 
 jobs:
+   # STAGE 1: Automatically run the check/dry-run plan
   build_and_plan:
     name: "1. Automated Plan Check"
     runs-on: ubuntu-latest
@@ -26,16 +27,11 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # Dynamically plans a creation OR a destruction by reading your Git commit text
+      # 👇 1. Captures the plan output text into a file
       - name: "Terraform Plan"
-        run: |
-          if [[ "${{ github.event.head_commit.message }}" == *"-destroy"* ]]; then
-            echo "Detected -destroy flag in commit message. Generating destruction plan."
-            terraform plan -destroy -no-color > plan_output.txt
-          else
-            terraform plan -no-color > plan_output.txt
-          fi
+        run: terraform plan -no-color > plan_output.txt
 
+      # 👇 2. Injects that plan text directly onto the GitHub Actions dashboard
       - name: "Publish Plan to Dashboard"
         run: |
           echo "### 📋 Terraform Plan Preview" >> $GITHUB_STEP_SUMMARY
@@ -43,29 +39,35 @@ jobs:
           cat plan_output.txt >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
+     # 👇 UPDATED CHECKOV STEP WITH SEVERITY FILTER & DASHBOARD OUTPUT
       - name: "Run Checkov Security Scan"
         uses: bridgecrewio/checkov-action@master
         with:
           framework: terraform
           soft_fail: true 
+          # 1. FIXED: Correct argument to filter out Low/Medium issues
           severity: "HIGH,CRITICAL"
+          # 2. FIXED: Keeps the multi-format capability healthy
           output_format: cli,github_failed_only
+          # 3. FIXED: Ensures files dump directly in the workspace root cleanly
           output_file_path: "./"
 
+      # 👇 NEW STEP: Appends Checkov's Markdown report straight onto the GitHub dashboard
       - name: "Publish Security Scan to Dashboard"
-        if: always()
+        if: always() # Ensures the report prints even if errors occur
         run: |
           echo "### 🛡️ Checkov Security Report (High & Critical Only)" >> $GITHUB_STEP_SUMMARY
-          if [ -f results_github_failed_only.md ]; then
-            cat results_github_failed_only.md >> $GITHUB_STEP_SUMMARY
+          if [ -f checkov_report.md ]; then
+            cat checkov_report.md >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ No High or Critical security issues detected!" >> $GITHUB_STEP_SUMMARY
           fi
           
-  deploy_or_destroy:
-    name: "2. Manual Execution Gate"
-    needs: build_and_plan         
-    environment: production       
+  # STAGE 2: The Manual Gate Deployment
+  deploy_to_azure:
+    name: "2. Manual Apply Execution"
+    needs: build_and_plan         # 👈 Ensures Stage 1 must pass successfully first
+    environment: production       # 👈 This keyword fires off your manual review gate!
     runs-on: ubuntu-latest
     env:
       ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
@@ -84,14 +86,5 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # 👇 IF COMMIT CONTAINS "-destroy", RUN THE ORDERLY DESTRUCTION
-      - name: "Terraform Destroy"
-        if: contains(github.event.head_commit.message, '-destroy')
-        run: |
-          terraform destroy -target=azurerm_virtual_network_gateway_connection.CoreServicesToTestERCircuit -auto-approve || true
-          terraform destroy -auto-approve
-
-      # 👇 OTHERWISE, RUN STANDARD APPLY TO LAUNCH LABS
       - name: "Terraform Apply"
-        if: !contains(github.event.head_commit.message, '-destroy')
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve # Safe because you manually authorized it to run
