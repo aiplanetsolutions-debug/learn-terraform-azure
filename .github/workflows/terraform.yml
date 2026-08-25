@@ -75,6 +75,20 @@ jobs:
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 👈 CRITICAL: Fetches the commit history so git log can read it
+
+      # 👇 NEW COMPILER STEP: Safely reads the real commit text directly from the code repository
+      - name: "Extract Git Commit Message"
+        id: parse_msg
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Captured Message: $COMMIT_MSG"
+          if [[ "$COMMIT_MSG" == *"-destroy"* ]]; then
+            echo "ACTION_TYPE=destroy" >> $GITHUB_ENV
+          else
+            echo "ACTION_TYPE=apply" >> $GITHUB_ENV
+          fi
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
@@ -84,13 +98,17 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # 👇 AUTOMATED FIX: Drops the lock via Azure CLI directly so Terraform never blocks again
+      # 👇 EXECUTES DESTROY (Triggered safely via our new internal variable mapping)
       - name: "Terraform Destroy"
-        if: contains(github.event.head_commit.message, '-destroy')
+        if: env.ACTION_TYPE == 'destroy'
         run: |
           echo "Forcefully clearing Azure ExpressRoute Connection Lock..."
           az network vpn-connection delete --name CoreServicesToTestERCircuit --resource-group ContosoResourceGroup || true
           
           echo "Running standard clean-up on remaining infrastructure..."
           terraform destroy -auto-approve
-          
+
+      # 👇 EXECUTES APPLY (Runs cleanly on standard pushes)
+      - name: "Terraform Apply"
+        if: env.ACTION_TYPE == 'apply'
+        run: terraform apply -auto-approve
