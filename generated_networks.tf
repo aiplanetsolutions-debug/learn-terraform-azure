@@ -449,7 +449,7 @@ resource "azurerm_virtual_network_gateway" "coreservices_er_gw" {
 }
 
 # =========================================================================
-# REQUIRED FIX: Standard Public IP for ExpressRoute Gateway Validation
+# REQUIRED FIX: Standard Public IP for ExpressRoute Virtual Network Gateway
 # =========================================================================
 resource "azurerm_public_ip" "er_gw_pip" {
   name                = "CoreServicesVnetGateway_ER-pip"
@@ -480,9 +480,9 @@ resource "azurerm_express_route_circuit" "test_er_circuit" {
   tags = {}
 }
 
-# =========================================================================
-# TASK 3: ExpressRoute Virtual Network Gateway Connection (The Bridge)
-# =========================================================================
+# =======================================================================================================
+# TASK 3: ExpressRoute Virtual Network Gateway Connection (The Bridge) Will fail if ER is unprovisioned
+# =======================================================================================================
 resource "azurerm_virtual_network_gateway_connection" "er_vnet_connection" {
   name                = "CoreServicesToTestERCircuit"
   resource_group_name = azurerm_resource_group.rg.name
@@ -493,9 +493,9 @@ resource "azurerm_virtual_network_gateway_connection" "er_vnet_connection" {
   express_route_circuit_id   = azurerm_express_route_circuit.test_er_circuit.id
 }
 
-# =========================================================================
-# TASK 3: ExpressRoute BGP Private Peering Configuration
-# =========================================================================
+# ===============================================================================================
+# TASK 3: ExpressRoute BGP Private Peering Configuration: Will not populate if ER is unprovisioned
+# ======================================================================================================
 resource "azurerm_express_route_circuit_peering" "private_peering" {
   peering_type                  = "AzurePrivatePeering"
   express_route_circuit_name    = azurerm_express_route_circuit.test_er_circuit.name
