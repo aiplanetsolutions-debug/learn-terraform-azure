@@ -119,7 +119,7 @@ resource "azurerm_subnet" "bastion_subnet" {
   name                 = "AzureBastionSubnet"
   resource_group_name  = azurerm_resource_group.intlb_rg.name
   virtual_network_name = azurerm_virtual_network.intlb_vnet.name
-  address_prefixes     = ["10.0.1.0/26"] # Automatically carves out a valid space inside your /16
+  address_prefixes     = ["10.1.1.0/26"] # Automatically carves out a valid space inside your /16
 }
 
 # ==============================================================================
@@ -419,6 +419,9 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
 }
 */ 
 
+# =========================================================================
+# 						EXPRESS ROUTE
+# =========================================================================
 # =========================================================================
 # TASK 1: ExpressRoute Virtual Network Gateway
 # =========================================================================
