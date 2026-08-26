@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build_and_plan:
+   build_and_plan:
     name: "1. Automated Plan Check"
     runs-on: ubuntu-latest
     env:
