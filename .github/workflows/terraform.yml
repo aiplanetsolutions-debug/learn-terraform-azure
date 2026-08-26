@@ -62,7 +62,7 @@ jobs:
             echo "✅ No High or Critical security issues detected!" >> $GITHUB_STEP_SUMMARY
           fi
           
-    deploy_or_destroy:
+   deploy_or_destroy:
     name: "2. Manual Execution Gate"
     needs: build_and_plan         
     environment: production       
