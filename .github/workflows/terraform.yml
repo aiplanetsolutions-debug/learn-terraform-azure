@@ -62,7 +62,7 @@ jobs:
             echo "✅ No High or Critical security issues detected!" >> $GITHUB_STEP_SUMMARY
           fi
           
-  deploy_or_destroy:
+    deploy_or_destroy:
     name: "2. Manual Execution Gate"
     needs: build_and_plan         
     environment: production       
@@ -76,9 +76,9 @@ jobs:
       - name: "Checkout Code"
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 👈 CRITICAL: Fetches the commit history so git log can read it
+          fetch-depth: 0 
 
-      # 👇 NEW COMPILER STEP: Safely reads the real commit text directly from the code repository
+      # Safely reads the real commit text directly from the code repository
       - name: "Extract Git Commit Message"
         id: parse_msg
         run: |
@@ -90,6 +90,13 @@ jobs:
             echo "ACTION_TYPE=apply" >> $GITHUB_ENV
           fi
 
+      # 👇 FIXED: Authenticates the Azure CLI session so it can process deletions
+      - name: "Login to Azure"
+        if: ${{ env.ACTION_TYPE == 'destroy' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
         with:
@@ -98,9 +105,9 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # 👇 EXECUTES DESTROY (Triggered safely via our new internal variable mapping)
+      # 👇 FIXED: Correct syntax evaluates this block properly during a destroy run
       - name: "Terraform Destroy"
-        if: env.ACTION_TYPE == 'destroy'
+        if: ${{ env.ACTION_TYPE == 'destroy' }}
         run: |
           echo "Forcefully clearing Azure ExpressRoute Connection Lock..."
           az network vpn-connection delete --name CoreServicesToTestERCircuit --resource-group ContosoResourceGroup || true
@@ -108,7 +115,7 @@ jobs:
           echo "Running standard clean-up on remaining infrastructure..."
           terraform destroy -auto-approve
 
-      # 👇 EXECUTES APPLY (Runs cleanly on standard pushes)
+      # 👇 FIXED: Correct syntax evaluates this block properly during an apply run
       - name: "Terraform Apply"
-        if: env.ACTION_TYPE == 'apply'
+        if: ${{ env.ACTION_TYPE == 'apply' }}
         run: terraform apply -auto-approve
