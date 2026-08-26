@@ -6,7 +6,10 @@ on:
       - main
 
 jobs:
-   build_and_plan:
+  # =========================================================================
+  # STAGE 1: Automated Plan Check & Security Analysis
+  # =========================================================================
+  build_and_plan:
     name: "1. Automated Plan Check"
     runs-on: ubuntu-latest
     env:
@@ -26,7 +29,6 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # Dynamically plans a creation OR a destruction by reading your Git commit text
       - name: "Terraform Plan"
         run: |
           if [[ "${{ github.event.head_commit.message }}" == *"-destroy"* ]]; then
@@ -61,8 +63,11 @@ jobs:
           else
             echo "✅ No High or Critical security issues detected!" >> $GITHUB_STEP_SUMMARY
           fi
-          
-   deploy_or_destroy:
+
+  # =========================================================================
+  # STAGE 2: Manual Gate Execution Engine
+  # =========================================================================
+  deploy_or_destroy:
     name: "2. Manual Execution Gate"
     needs: build_and_plan         
     environment: production       
@@ -78,7 +83,6 @@ jobs:
         with:
           fetch-depth: 0 
 
-      # Safely reads the real commit text directly from the code repository
       - name: "Extract Git Commit Message"
         id: parse_msg
         run: |
@@ -90,7 +94,6 @@ jobs:
             echo "ACTION_TYPE=apply" >> $GITHUB_ENV
           fi
 
-      # 👇 FIXED: Authenticates the Azure CLI session so it can process deletions
       - name: "Login to Azure"
         if: ${{ env.ACTION_TYPE == 'destroy' }}
         uses: azure/login@v2
@@ -105,17 +108,16 @@ jobs:
       - name: "Terraform Init"
         run: terraform init
 
-      # 👇 FIXED: Correct syntax evaluates this block properly during a destroy run
+      # 👇 FIXED: Explicit subscription context scope flags attached
       - name: "Terraform Destroy"
         if: ${{ env.ACTION_TYPE == 'destroy' }}
         run: |
-          echo "Forcefully clearing Azure ExpressRoute Connection Lock..."
-          az network vpn-connection delete --name CoreServicesToTestERCircuit --resource-group ContosoResourceGroup || true
+          echo "Forcefully clearing Azure ExpressRoute Connection Lock targeting Subscription scope..."
+          az network vpn-connection delete --name CoreServicesToTestERCircuit --resource-group ContosoResourceGroup --subscription "${{ env.ARM_SUBSCRIPTION_ID }}" || true
           
           echo "Running standard clean-up on remaining infrastructure..."
           terraform destroy -auto-approve
 
-      # 👇 FIXED: Correct syntax evaluates this block properly during an apply run
       - name: "Terraform Apply"
         if: ${{ env.ACTION_TYPE == 'apply' }}
         run: terraform apply -auto-approve
