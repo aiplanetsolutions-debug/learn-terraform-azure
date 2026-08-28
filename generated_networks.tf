@@ -418,7 +418,7 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
   depends_on = [azurerm_vpn_gateway.hub_s2s_gateway]
 }
 */ 
-
+  
 # =========================================================================
 # 						EXPRESS ROUTE
 # =========================================================================
@@ -571,4 +571,67 @@ resource "azurerm_network_interface" "test_vm_nic" {
 resource "azurerm_network_interface_security_group_association" "nsg_assoc_test_vm" {
   network_interface_id      = azurerm_network_interface.test_vm_nic.id
   network_security_group_id = azurerm_network_security_group.template_nsg.id # References your existing myNSG
+}
+
+# ==============================================================================
+# TASK 3: CREATE INTERNAL STANDARD LOAD BALANCER
+# ==============================================================================
+resource "azurerm_lb" "internal_lb" {
+  name                = "myIntLoadBalancer"
+  location            = azurerm_resource_group.intlb_rg.location # Dynamically resolves to East US
+  resource_group_name = azurerm_resource_group.intlb_rg.name     # Anchors inside your IntLB-RG
+  sku                 = "Standard"                               # Portal Profile choice: Standard
+  # type = "Internal" is established by providing a private subnet block instead of a public IP mapping
+
+  frontend_ip_configuration {
+    name                          = "LoadBalancerFrontEnd"
+    subnet_id                     = azurerm_subnet.frontend_subnet.id # Binds straight to your myFrontEndSubnet
+    private_ip_address_allocation = "Dynamic"                        # Assignment: Dynamic
+  }
+}
+
+# ==============================================================================
+# TASK 4: CREATE LOAD BALANCER RESOURCES
+# ==============================================================================
+
+# 1. Create Backend Address Pool
+resource "azurerm_lb_backend_address_pool" "backend_pool" {
+  loadbalancer_id = azurerm_lb.internal_lb.id
+  name            = "myBackendPool"
+}
+
+# 2. Add all 3 loop VMs (myVM1, myVM2, myVM3) to the Backend Address Pool
+# This handles the template index mappings cleanly using a parallel resource count loop
+resource "azurerm_network_interface_backend_address_pool_association" "vm_pool_association" {
+  count                   = 3 # Dynamically hooks your 3 template nics
+  network_interface_id    = azurerm_network_interface.template_nics[count.index].id
+  ip_configuration_name   = "ipconfig1"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.backend_pool.id
+}
+
+# 3. Create HTTP Health Probe
+resource "azurerm_lb_probe" "http_probe" {
+  loadbalancer_id     = azurerm_lb.internal_lb.id
+  name                = "myHealthProbe"
+  protocol            = "Http" # Protocol: HTTP
+  port                = 80     # Port: 80
+  request_path        = "/"    # Path: /
+  interval_in_seconds = 15     # Interval: 15
+}
+
+# 4. Create Load Balancing Routing Rule
+resource "azurerm_lb_rule" "http_rule" {
+  loadbalancer_id                = azurerm_lb.internal_lb.id
+  name                           = "myHTTPRule"
+  protocol                       = "Tcp" # Protocol: TCP
+  frontend_port                  = 80    # Port: 80
+  backend_port                   = 80    # Backend Port: 80
+  frontend_ip_configuration_name = "LoadBalancerFrontEnd"
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.backend_pool.id]
+  probe_id                       = azurerm_lb_probe.http_probe.id
+  idle_timeout_in_minutes        = 15    # Idle timeout (minutes): 15
+
+  # Explicit platform flags satisfying your strict unchecked template overrides
+  enable_floating_ip = false # Enable Floating IP: Not checked
+  enable_tcp_reset   = false # Enable TCP Reset: Not checked
 }
