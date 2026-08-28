@@ -481,7 +481,7 @@ resource "azurerm_express_route_circuit" "test_er_circuit" {
 }
 
 # =======================================================================================================
-# TASK 3: ExpressRoute Virtual Network Gateway Connection (The Bridge) Will fail if ER is unprovisioned
+# TASK 3: ExpressRoute Virtual Network Gateway Connection (The Bridge): Will fail if ER is unprovisioned
 # =======================================================================================================
 resource "azurerm_virtual_network_gateway_connection" "er_vnet_connection" {
   name                = "CoreServicesToTestERCircuit"
@@ -508,4 +508,45 @@ resource "azurerm_express_route_circuit_peering" "private_peering" {
 
   # Option for MD5 Security Encryption
   # shared_key                  = "YourSecretMESSKey" 
+}
+
+# ==============================================================================
+# Resources for LB VMs 
+# ==============================================================================
+
+resource "azurerm_network_security_group" "template_nsg" {
+  name                = "myNSG"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+
+  security_rule {
+    name                       = "default-allow-rdp"
+    priority                   = 1000
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_interface" "template_nics" {
+  count               = 3
+  name                = "myVMnic${count.index + 1}"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.backend_subnet.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nsg_assoc_template" {
+  count                     = 3
+  network_interface_id      = azurerm_network_interface.template_nics[count.index].id
+  network_security_group_id = azurerm_network_security_group.template_nsg.id
 }

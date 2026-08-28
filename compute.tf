@@ -286,3 +286,58 @@ resource "azurerm_windows_virtual_machine" "vm3" {
   }
 }
 
+# ==============================================================================
+# VMs for LB
+# ==============================================================================
+
+resource "azurerm_windows_virtual_machine" "template_vms" {
+  count               = 3
+  name                = "myVM${count.index + 1}"
+  computer_name       = "myVM${count.index + 1}"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  size                = "Standard_D2s_v7"
+  admin_username      = "TestUser"
+  admin_password      = var.admin_password
+
+  network_interface_ids = [azurerm_network_interface.template_nics[count.index].id]
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-datacenter-gensecond"
+    version   = "latest"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  provision_vm_agent = true
+
+  lifecycle {
+    ignore_changes = [
+      admin_password,
+    ]
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "iis_extension" {
+  count                = 3
+  name                 = "VMConfig"
+  virtual_machine_id   = azurerm_windows_virtual_machine.template_vms[count.index].id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.7"
+
+  settings = <<SETTINGS
+    {
+        "fileUris": [
+            "https://githubusercontent.com"
+        ],
+        "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File install-iis.ps1"
+    }
+SETTINGS
+}
+
