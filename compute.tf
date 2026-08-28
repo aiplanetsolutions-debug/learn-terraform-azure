@@ -353,7 +353,7 @@ resource "azurerm_windows_virtual_machine" "test_vm" {
   computer_name       = "myTestVM"
   location            = azurerm_resource_group.intlb_rg.location
   resource_group_name = azurerm_resource_group.intlb_rg.name
-  size                = "Standard_D2s_v3"          # Portal Core Profile Choice
+  size                = "Standard_D2s_v7"          # Portal Core Profile Choice
   admin_username      = "TestUser"                 # Portal Core Profile Choice
   admin_password      = var.admin_password         # Safe infrastructure global variable check
 
