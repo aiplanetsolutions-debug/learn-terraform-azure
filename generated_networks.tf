@@ -591,7 +591,7 @@ resource "azurerm_lb" "internal_lb" {
 }
 
 # ==============================================================================
-# TASK 4: CREATE LOAD BALANCER RESOURCES
+# TASK 4: CREATE AZ LOAD BALANCER RESOURCES
 # ==============================================================================
 
 # 1. Create Backend Address Pool
