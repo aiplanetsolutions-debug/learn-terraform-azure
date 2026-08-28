@@ -550,3 +550,25 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc_templ
   network_interface_id      = azurerm_network_interface.template_nics[count.index].id
   network_security_group_id = azurerm_network_security_group.template_nsg.id
 }
+
+# ==============================================================================
+# NETWORK INTERFACE FOR STANDALONE TEST RESOURCE
+# ==============================================================================
+resource "azurerm_network_interface" "test_vm_nic" {
+  name                = "myTestVM-nic"
+  location            = azurerm_resource_group.intlb_rg.location # Dynamically maps to East US
+  resource_group_name = azurerm_resource_group.intlb_rg.name     # References your IntLB-RG
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.backend_subnet.id # Binds cleanly to myBackendSubnet
+    private_ip_address_allocation = "Dynamic"
+    # public_ip_address_id is completely omitted to match Portal "None" criteria
+  }
+}
+
+# Advanced Security Definition: Pairs your interface directly with the template's NSG boundary
+resource "azurerm_network_interface_security_group_association" "nsg_assoc_test_vm" {
+  network_interface_id      = azurerm_network_interface.test_vm_nic.id
+  network_security_group_id = azurerm_network_security_group.template_nsg.id # References your existing myNSG
+}

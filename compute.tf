@@ -341,3 +341,39 @@ resource "azurerm_virtual_machine_extension" "iis_extension" {
     }
 SETTINGS
 }
+
+# ==============================================================================
+# STANDALONE TEST COMPUTATIONAL WORKLOAD (NO EXTENSIONS ATTACHED)
+# ==============================================================================
+resource "azurerm_windows_virtual_machine" "test_vm" {
+  name                = "myTestVM"
+  computer_name       = "myTestVM"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  size                = "Standard_D2s_v7"          # Portal Core Profile Choice
+  admin_username      = "TestUser"                 # Portal Core Profile Choice
+  admin_password      = var.admin_password         # Safe infrastructure global variable check
+
+  network_interface_ids = [azurerm_network_interface.test_vm_nic.id]
+
+  # Maps natively to removing availability set rules
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-datacenter-gensecond"               
+    version   = "latest"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"          # Match structural production baseline
+  }
+
+  provision_vm_agent = true
+
+  lifecycle {
+    ignore_changes = [
+      admin_password,
+    ]
+  }
+}
