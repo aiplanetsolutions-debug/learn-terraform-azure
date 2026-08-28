@@ -345,28 +345,33 @@ SETTINGS
 # ==============================================================================
 # STANDALONE TEST COMPUTATIONAL WORKLOAD (NO EXTENSIONS ATTACHED)
 # ==============================================================================
+# ==============================================================================
+# IN-NETWORK TEST VM (QUOTA-SAFE 1-CORE PROFILE)
+# ==============================================================================
 resource "azurerm_windows_virtual_machine" "test_vm" {
   name                = "myTestVM"
   computer_name       = "myTestVM"
-  location            = azurerm_resource_group.intlb_rg.location
-  resource_group_name = azurerm_resource_group.intlb_rg.name
-  size                = Standard_D2s_v3          # Portal Core Profile Choice
-  admin_username      = "TestUser"                 # Portal Core Profile Choice
-  admin_password      = var.admin_password         # Safe infrastructure global variable check
+  location            = azurerm_resource_group.intlb_rg.location # Restored to East US
+  resource_group_name = azurerm_resource_group.intlb_rg.name     # Restored to IntLB-RG
+  
+  # SWAPPED: Changed to a 1-core burstable size to clear your regional quota cap
+  size                = "Standard_B1s" 
+  
+  admin_username      = "TestUser"
+  admin_password      = var.admin_password
 
   network_interface_ids = [azurerm_network_interface.test_vm_nic.id]
 
-  # Maps natively to removing availability set rules
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-datacenter-gensecond"               
+    sku       = "2022-datacenter-g2"
     version   = "latest"
   }
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"          # Match structural production baseline
+    storage_account_type = "Standard_LRS" # Standard HDD/SSD saves budget on testing nodes
   }
 
   provision_vm_agent = true
@@ -377,3 +382,4 @@ resource "azurerm_windows_virtual_machine" "test_vm" {
     ]
   }
 }
+
