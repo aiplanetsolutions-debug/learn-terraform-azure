@@ -323,21 +323,21 @@ resource "azurerm_windows_virtual_machine" "template_vms" {
   }
 }
 
+# ==============================================================================
+# INLINE EXECUTION VERSION (REPLACES EXISTING EXTENSION IN VIRTUAL_MACHINES.TF)
+# ==============================================================================
 resource "azurerm_virtual_machine_extension" "iis_extension" {
   count                = 3
   name                 = "VMConfig"
   virtual_machine_id   = azurerm_windows_virtual_machine.template_vms[count.index].id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
-  type_handler_version = "1.7"
+  type_handler_version = "1.10" # Upgraded to stable handler version
 
+  # REMOVED fileUris entirely. The command now installs IIS directly using local modules.
   settings = <<SETTINGS
     {
-        "fileUris": [
-            "https://githubusercontent.com"
-        ],
-        "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File install-iis.ps1"
+        "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"Install-WindowsFeature -Name Web-Server -IncludeManagementTools\""
     }
 SETTINGS
 }
-
