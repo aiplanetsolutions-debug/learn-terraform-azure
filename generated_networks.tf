@@ -418,7 +418,8 @@ resource "azurerm_virtual_hub_connection" "research_vnet_connection" {
   depends_on = [azurerm_vpn_gateway.hub_s2s_gateway]
 }
 */ 
-  
+
+/* 
 # =========================================================================
 # 						EXPRESS ROUTE
 # =========================================================================
@@ -509,6 +510,7 @@ resource "azurerm_express_route_circuit_peering" "private_peering" {
   # Option for MD5 Security Encryption
   # shared_key                  = "YourSecretMESSKey" 
 }
+*/ 
 
 # ==============================================================================
 # Resources for LB VMs 
