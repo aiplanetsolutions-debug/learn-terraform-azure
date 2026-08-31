@@ -104,7 +104,7 @@ resource "azurerm_application_gateway" "contoso_app_gateway" {
     backend_http_settings_name  = "HTTPSetting"
   }
 }
-/*
+
 # Step 2 of a two step process
 # ==============================================================================
 # TASK 3: ASSOCIATE BACKEND VM NICS TO APPLICATION GATEWAY BACKEND POOL
@@ -123,4 +123,3 @@ resource "azurerm_network_interface_application_gateway_backend_address_pool_ass
   ip_configuration_name   = "ipconfig1"                                  # Matches the internal IP config name of your NIC
   backend_address_pool_id = tolist(azurerm_application_gateway.contoso_app_gateway.backend_address_pool)[0].id
 }
-*/
