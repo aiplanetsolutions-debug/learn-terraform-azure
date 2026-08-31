@@ -297,9 +297,9 @@ resource "azurerm_virtual_network_gateway_connection" "manufacturing_to_coreserv
 
   shared_key = "abc123"
 }
-/*  
-# Note: Keep this as is to BLOCK the section & # to UNBLOCK
-
+  
+# Note: Use the below to block off this section
+/*
 # =========================================================================
 # Site-to-Site Gateway: Local Network Target (On-Prem Office)
 # =========================================================================
@@ -574,7 +574,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc_test_
   network_interface_id      = azurerm_network_interface.test_vm_nic.id
   network_security_group_id = azurerm_network_security_group.template_nsg.id # References your existing myNSG
 }
-
+/*
 # ==============================================================================
 # TASK 3: CREATE INTERNAL STANDARD LOAD BALANCER
 # ==============================================================================
@@ -637,3 +637,4 @@ resource "azurerm_lb_rule" "http_rule" {
   enable_floating_ip = false # Enable Floating IP: Not checked
   enable_tcp_reset   = false # Enable TCP Reset: Not checked
 }
+*/
