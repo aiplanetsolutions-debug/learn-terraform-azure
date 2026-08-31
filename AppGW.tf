@@ -3,7 +3,7 @@
 # ==============================================================================
 
 resource "azurerm_resource_group" "contoso_rg" {
-  name     = "ContosoResourceGroup"
+  name     = "Contoso2ResourceGroup"
   location = "East US"
 }
 
@@ -99,6 +99,7 @@ resource "azurerm_application_gateway" "contoso_app_gateway" {
   }
 }
 /*
+# Step 2 of a two step process
 # ==============================================================================
 # TASK 3: ASSOCIATE BACKEND VM NICS TO APPLICATION GATEWAY BACKEND POOL
 # ==============================================================================
