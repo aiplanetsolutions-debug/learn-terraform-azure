@@ -1,3 +1,4 @@
+/*
 # ==============================================================================
 # LAB RESOURCE GROUP & NEW VNET CORE ARCHITECTURE
 # ==============================================================================
@@ -151,3 +152,4 @@ resource "azurerm_network_interface" "backend_vm2_nic" {
     private_ip_address_allocation = "Dynamic"
   }
 }
+*/
