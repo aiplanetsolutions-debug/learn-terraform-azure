@@ -190,7 +190,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc3" {
   network_interface_id      = azurerm_network_interface.nic3.id
   network_security_group_id = azurerm_network_security_group.nsg3.id
 }
-
+/*
 # ==============================================================================
 # VIRTUAL MACHINES (Page 2 & Page 4)
 # ==============================================================================
@@ -285,7 +285,7 @@ resource "azurerm_windows_virtual_machine" "vm3" {
     ]
   }
 }
-
+*/
 /*
 # ==============================================================================
 # VMs for LB
