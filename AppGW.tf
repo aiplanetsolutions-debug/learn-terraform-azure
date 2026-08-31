@@ -54,6 +54,12 @@ resource "azurerm_application_gateway" "contoso_app_gateway" {
     tier     = "Standard_v2"
     capacity = 1
   }
+  
+  # 👇 ADD THIS BLOCK TO SATISFY AZURE'S RETIRED TLS VALIDATION MANDATE
+  ssl_policy {
+    policy_type = "Predefined"
+    policy_name = "AppGwSslPolicy20220101" # Strictly enforces TLS 1.2 & 1.3 compliance
+  }
 
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
