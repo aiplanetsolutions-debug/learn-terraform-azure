@@ -123,3 +123,31 @@ resource "azurerm_network_interface_application_gateway_backend_address_pool_ass
   ip_configuration_name   = "ipconfig1"                                  # Matches the internal IP config name of your NIC
   backend_address_pool_id = tolist(azurerm_application_gateway.contoso_app_gateway.backend_address_pool)[0].id
 }
+
+# ==============================================================================
+# MISSING DEPENDENCY: NETWORK INTERFACES FOR BACKEND SERVERS
+# ==============================================================================
+
+resource "azurerm_network_interface" "backend_vm1_nic" {
+  name                = "BackendVM1-nic" # Matches your task target string name
+  location            = azurerm_resource_group.contoso_rg.location
+  resource_group_name = azurerm_resource_group.contoso_rg.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.backend_server_subnet.id # Binds to BackendSubnet
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_network_interface" "backend_vm2_nic" {
+  name                = "BackendVM2-nic" # Matches your task target string name
+  location            = azurerm_resource_group.contoso_rg.location
+  resource_group_name = azurerm_resource_group.contoso_rg.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.backend_server_subnet.id # Binds to BackendSubnet
+    private_ip_address_allocation = "Dynamic"
+  }
+}
