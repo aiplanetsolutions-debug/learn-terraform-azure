@@ -1,22 +1,9 @@
 # ==========================================
 # VARIABLES & PROVIDER CONFIGURATION
 # ==========================================
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.0" # Tailored for modern Azure provider specifications
-    }
-  }
-}
-
-provider "azurerm" {
-  features {}
-}
-
 variable "admin_password" {
   type        = string
-  description = "The admin password for the workload virtual machine."
+  default     = "Agbaya@20080228" # Replace with your secure lab password
   sensitive   = true
 }
 
