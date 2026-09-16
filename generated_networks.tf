@@ -641,3 +641,37 @@ resource "azurerm_lb_rule" "http_rule" {
   enable_floating_ip = false # Enable Floating IP: Not checked
   enable_tcp_reset   = false # Enable TCP Reset: Not checked
 }
+
+# ==============================================================================
+# 1. CREATE LOG ANALYTICS WORKSPACE
+# ==============================================================================
+resource "azurerm_log_analytics_workspace" "laws" {
+  name                = "myLAworkspace"
+  resource_group_name = "IntLB-RG"
+  location            = "westus" # Replicates: Region -> West US
+  sku                 = "PerGB2018" # The standard default pay-as-you-go tier
+  retention_in_days   = 30
+}
+
+# ==============================================================================
+# 2. REFERENCE THE EXISTING TARGET LOAD BALANCER
+# ==============================================================================
+data "azurerm_lb" "lb" {
+  name                = "myIntLoadBalancer"
+  resource_group_name = "IntLB-RG"
+}
+
+# ==============================================================================
+# 3. CONFIGURE DIAGNOSTIC PIPELINE LINK
+# ==============================================================================
+resource "azurerm_monitor_diagnostic_setting" "lb_diagnostics" {
+  name                       = "myLBDiagnostics"
+  target_resource_id         = data.azurerm_lb.lb.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.laws.id # References the newly created workspace
+
+  # Replicates: "Select the AllMetrics checkbox"
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
