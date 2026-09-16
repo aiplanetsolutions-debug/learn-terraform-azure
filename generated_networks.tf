@@ -1,3 +1,4 @@
+/*
 # ==============================================================================
 # VNET & SUBNET
 # ==============================================================================
@@ -88,65 +89,6 @@ resource "azurerm_subnet" "SensorSubnet3" {
   address_prefixes     = ["10.30.22.0/24"] 
 }
 
-# ==============================================================================
-# AZURE BASTION VNETs & SUBNET
-# ==============================================================================
-resource "azurerm_virtual_network" "intlb_vnet" {
-  name                = "IntLB-VNet"
-  location            = azurerm_resource_group.intlb_rg.location
-  resource_group_name = azurerm_resource_group.intlb_rg.name
-  address_space       = ["10.1.0.0/16"]
-}
-
-# 1. Backend Subnet (10.1.0.0/24)
-resource "azurerm_subnet" "backend_subnet" {
-  name                 = "myBackendSubnet"
-  resource_group_name  = azurerm_resource_group.intlb_rg.name
-  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
-  address_prefixes     = ["10.1.0.0/24"]
-}
-
-# 2. Frontend Subnet (10.1.2.0/24)
-resource "azurerm_subnet" "frontend_subnet" {
-  name                 = "myFrontEndSubnet"
-  resource_group_name  = azurerm_resource_group.intlb_rg.name
-  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
-  address_prefixes     = ["10.1.2.0/24"]
-}
-
-# 3. Dedicated Azure Bastion Subnet (Must be exactly named "AzureBastionSubnet")
-resource "azurerm_subnet" "bastion_subnet" {
-  name                 = "AzureBastionSubnet"
-  resource_group_name  = azurerm_resource_group.intlb_rg.name
-  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
-  address_prefixes     = ["10.1.1.0/26"] # Automatically carves out a valid space inside your /16
-}
-
-# ==============================================================================
-# AZURE BASTION DEPENDENCIES & HOST
-# ==============================================================================
-
-# Required Public IP for Bastion (Must be Standard SKU and Static allocation)
-resource "azurerm_public_ip" "bastion_pip" {
-  name                = "myBastionIP"
-  location            = azurerm_resource_group.intlb_rg.location
-  resource_group_name = azurerm_resource_group.intlb_rg.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-# The Bastion Host Service
-resource "azurerm_bastion_host" "bastion" {
-  name                = "myBastionHost"
-  location            = azurerm_resource_group.intlb_rg.location
-  resource_group_name = azurerm_resource_group.intlb_rg.name
-
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.bastion_subnet.id
-    public_ip_address_id = azurerm_public_ip.bastion_pip.id
-  }
-}
 # ==============================================================================
 # 1. PEERING DIRECTION: CoreServicesVnet -> ManufacturingVnet
 # ==============================================================================
@@ -297,7 +239,7 @@ resource "azurerm_virtual_network_gateway_connection" "manufacturing_to_coreserv
 
   shared_key = "abc123"
 }
-  
+*/ 
 # Note: Use the below to block off this section
 /*
 # =========================================================================
@@ -512,6 +454,68 @@ resource "azurerm_express_route_circuit_peering" "private_peering" {
 }
 */ 
 
+#****************************************Load Balancer*****************************************************
+
+# ==============================================================================
+# AZURE BASTION VNETs & SUBNET
+# ==============================================================================
+resource "azurerm_virtual_network" "intlb_vnet" {
+  name                = "IntLB-VNet"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  address_space       = ["10.1.0.0/16"]
+}
+
+# 1. Backend Subnet (10.1.0.0/24)
+resource "azurerm_subnet" "backend_subnet" {
+  name                 = "myBackendSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.1.0.0/24"]
+}
+
+# 2. Frontend Subnet (10.1.2.0/24)
+resource "azurerm_subnet" "frontend_subnet" {
+  name                 = "myFrontEndSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.1.2.0/24"]
+}
+
+# 3. Dedicated Azure Bastion Subnet (Must be exactly named "AzureBastionSubnet")
+resource "azurerm_subnet" "bastion_subnet" {
+  name                 = "AzureBastionSubnet"
+  resource_group_name  = azurerm_resource_group.intlb_rg.name
+  virtual_network_name = azurerm_virtual_network.intlb_vnet.name
+  address_prefixes     = ["10.1.1.0/26"] # Automatically carves out a valid space inside your /16
+}
+
+# ==============================================================================
+# AZURE BASTION DEPENDENCIES & HOST
+# ==============================================================================
+
+# Required Public IP for Bastion (Must be Standard SKU and Static allocation)
+resource "azurerm_public_ip" "bastion_pip" {
+  name                = "myBastionIP"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+# The Bastion Host Service
+resource "azurerm_bastion_host" "bastion" {
+  name                = "myBastionHost"
+  location            = azurerm_resource_group.intlb_rg.location
+  resource_group_name = azurerm_resource_group.intlb_rg.name
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.bastion_subnet.id
+    public_ip_address_id = azurerm_public_ip.bastion_pip.id
+  }
+}
+
 # ==============================================================================
 # Resources for LB VMs 
 # ==============================================================================
@@ -574,7 +578,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc_test_
   network_interface_id      = azurerm_network_interface.test_vm_nic.id
   network_security_group_id = azurerm_network_security_group.template_nsg.id # References your existing myNSG
 }
-/*
+
 # ==============================================================================
 # TASK 3: CREATE INTERNAL STANDARD LOAD BALANCER
 # ==============================================================================
@@ -637,4 +641,3 @@ resource "azurerm_lb_rule" "http_rule" {
   enable_floating_ip = false # Enable Floating IP: Not checked
   enable_tcp_reset   = false # Enable TCP Reset: Not checked
 }
-*/
