@@ -675,3 +675,17 @@ resource "azurerm_monitor_diagnostic_setting" "lb_diagnostics" {
     enabled  = true
   }
 }
+
+
+
+
+/*
+# ==============================================================================
+# Info: KQL Querry on WORKSPACE
+# ==============================================================================
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.NETWORK"
+| where Resource == "MYINTLOADBALANCER"
+| project TimeGenerated, MetricName, Maximum, Average, UnitName
+| order by TimeGenerated desc
+*/
